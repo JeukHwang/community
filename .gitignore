@@ -49,3 +49,4 @@ pnpm-lock.yaml
 # Custom
 dist
 build
+.env
