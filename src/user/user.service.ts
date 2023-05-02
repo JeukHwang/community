@@ -3,8 +3,13 @@ import { User } from './user.entity';
 
 @Injectable()
 export class UserService {
-  async create(name: string, email: string, password: string) {
-    const user = User.create({ name, email, password });
+  async create(
+    surname: string,
+    givenName: string,
+    email: string,
+    password: string,
+  ) {
+    const user = User.create({ surname, givenName, email, password });
     await user.save();
     return user;
   }

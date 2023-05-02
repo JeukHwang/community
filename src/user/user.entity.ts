@@ -11,7 +11,8 @@ import {
 
 export type UserProfile = {
   email: string;
-  name: string;
+  surname: string;
+  givenName: string;
   profilePhoto: string;
 };
 
@@ -27,7 +28,10 @@ export class User extends BaseEntity {
   password: string;
 
   @Column()
-  name: string;
+  surname: string;
+
+  @Column()
+  givenName: string;
 
   @Column({ default: 'https://sparcs.netlify.app/img/symbol.svg' })
   profilePhoto: string;
@@ -44,7 +48,8 @@ export class User extends BaseEntity {
   toProfile(): UserProfile {
     return {
       email: this.email,
-      name: this.name,
+      surname: this.surname,
+      givenName: this.givenName,
       profilePhoto: this.profilePhoto,
     };
   }
