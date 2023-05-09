@@ -7,8 +7,8 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { User } from '@prisma/client';
 import { Response } from 'express';
-import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 import { Public } from './decorator/skip-auth.decorator';

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { User } from 'src/user/user.entity';
 import { UserService } from 'src/user/user.service';
 import { RegisterRequestDto } from './dto/register.dto';
 
