@@ -23,15 +23,11 @@ import { UserModule } from './user/user.module';
         JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
       }),
+      isGlobal: true,
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.MYSQL_HOST,
-      port: 3306,
-      username: process.env.MYSQL_USERNAME,
-      password: process.env.MYSQL_PASSWORD,
-      database:
-        process.env.MODE === 'development' ? 'development' : 'production',
+      url: process.env.DATABASE_URL,
       entities: [User],
       synchronize: process.env.MODE === 'development',
       autoLoadEntities: true,
