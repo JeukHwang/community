@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from 'src/user/user.service';
 
-type Payload = {
+export type JwtPayload = {
+  id: string;
   email: string;
-  sub: string;
 };
 
 @Injectable()
@@ -24,8 +24,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload) {
-    return this.userService.findById(payload.id);
+  async validate(payload: JwtPayload) {
+    const user = this.userService.findById(payload.id);
+    if (!user) {
+      throw new UnauthorizedException('Access denied - Validate');
+    }
+    return user;
     // const { sub: email } = payload;
     // const user = await this.userService.findByEmail(email);
     // if (!user) {
