@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = env("MYSQL_URL_DEV")
 }
 
 model Space {
@@ -21,9 +21,9 @@ model Space {
   post      Post[]
   chat      Chat[]
 
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model User {
@@ -41,9 +41,9 @@ model User {
   post      Post[]
   chat      Chat[]
 
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
 
 model UserSpace {
@@ -54,9 +54,9 @@ model UserSpace {
   roleId  String
   role    SpaceRole @relation(fields: [roleId], references: [id])
 
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 
   @@id([userId, spaceId])
 }
@@ -69,9 +69,9 @@ model SpaceRole {
 
   userSpace UserSpace[]
 
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
 
 model Post {
@@ -87,9 +87,9 @@ model Post {
   spaceId  String
   space    Space  @relation(fields: [spaceId], references: [id])
 
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
 
 model Chat {
@@ -97,12 +97,15 @@ model Chat {
 
   content String
 
-  authorId String
-  author   User   @relation(fields: [authorId], references: [id])
-  spaceId  String
-  space    Space  @relation(fields: [spaceId], references: [id])
+  authorId     String
+  author       User    @relation(fields: [authorId], references: [id])
+  spaceId      String
+  space        Space   @relation(fields: [spaceId], references: [id])
+  parentChatId String?
+  parentChat   Chat?   @relation("ParentChatChildChat", fields: [parentChatId], references: [id])
+  childChat    Chat[]  @relation("ParentChatChildChat")
 
-  isDeleted Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
