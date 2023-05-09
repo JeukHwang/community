@@ -16,9 +16,9 @@ import { JwtAuthGuard } from './auth/guard/jwt-auth.guard';
   imports: [
     ConfigModule.forRoot({
       validationSchema: Joi.object({
-        MYSQL_HOST: Joi.string().required(),
-        MYSQL_USERNAME: Joi.string().required(),
-        MYSQL_PASSWORD: Joi.string().required(),
+        MODE: Joi.string().required(),
+        MYSQL_URL_DEV: Joi.string().required(),
+        MYSQL_URL_PROD: Joi.string().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
