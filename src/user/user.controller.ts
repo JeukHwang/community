@@ -1,7 +1,21 @@
-import { Controller } from '@nestjs/common';
-import { UserService } from './user.service';
+import { Controller, Get, Req } from '@nestjs/common';
+import { User } from '@prisma/client';
+import { Public } from 'src/auth/decorator/skip-auth.decorator';
+import { UserProfile, UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Public()
+  @Get('all')
+  async getAll(): Promise<UserProfile[]> {
+    return await this.userService.findAllProfile();
+  }
+
+  @Get('current')
+  async getCurrentUser(@Req() req): Promise<User> {
+    const user = req.user;
+    return user;
+  }
 }
