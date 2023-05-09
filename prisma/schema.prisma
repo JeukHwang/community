@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Space {
+  id String @id @default(uuid())
+
+  managerPassword    String
+  paticipantPassword String
+  name               String @unique()
+  profilePhoto       String
+
+  creatorId String
+  creator   User        @relation(fields: [creatorId], references: [id])
+  userSpace UserSpace[]
+  post      Post[]
+  chat      Chat[]
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id String @id @default(uuid())
+
+  email        String  @unique()
+  password     String
+  surname      String
+  givenName    String
+  profilePhoto String
+  refreshToken String?
+
+  userSpace UserSpace[]
+  creator   Space[]
+  post      Post[]
+  chat      Chat[]
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model UserSpace {
+  userId  String
+  user    User      @relation(fields: [userId], references: [id])
+  spaceId String
+  space   Space     @relation(fields: [spaceId], references: [id])
+  roleId  String
+  role    SpaceRole @relation(fields: [roleId], references: [id])
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@id([userId, spaceId])
+}
+
+model SpaceRole {
+  id String @id @default(uuid())
+
+  name      String
+  isManager Boolean
+
+  userSpace UserSpace[]
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Post {
+  id String @id @default(uuid())
+
+  title       String
+  content     String
+  type        String
+  isAnonymous Boolean
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+  spaceId  String
+  space    Space  @relation(fields: [spaceId], references: [id])
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Chat {
+  id String @id @default(uuid())
+
+  content String
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+  spaceId  String
+  space    Space  @relation(fields: [spaceId], references: [id])
+
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
