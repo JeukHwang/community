@@ -11,7 +11,7 @@ export type UserProfile = {
   profilePhoto: string;
 };
 
-export function toProfile(user: User): UserProfile {
+export function toUserProfile(user: User): UserProfile {
   return {
     email: user.email,
     surname: user.surname,
@@ -45,7 +45,7 @@ export class UserService {
     const users = await this.prismaService.user.findMany({
       where: { deletedAt: null },
     });
-    return users.map(toProfile);
+    return users.map(toUserProfile);
   }
 
   async findById(id: string): Promise<User | null> {

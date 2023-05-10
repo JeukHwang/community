@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { UserService, toProfile } from 'src/user/user.service';
+import { UserService, toUserProfile } from 'src/user/user.service';
 import { RegisterRequestDto } from './dto/register.dto';
 
 type Payload = {
@@ -31,7 +31,7 @@ export class AuthService {
       ...userInfo,
       password: hashedPassword,
     });
-    return toProfile(user);
+    return toUserProfile(user);
   }
 
   async issueAccessToken(user: User) {

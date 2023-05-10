@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { Response } from 'express';
-import { UserProfile, UserService, toProfile } from 'src/user/user.service';
+import { UserProfile, UserService, toUserProfile } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 import { Public } from './decorator/skip-auth.decorator';
 import { RegisterRequestDto } from './dto/register.dto';
@@ -47,7 +47,7 @@ export class AuthController {
     res.cookie('Refresh', refreshToken, refreshOption);
     // console.log(`Access token: ${accessToken}`);
     // console.log(`Refresh token: ${refreshToken}`);
-    return toProfile(user);
+    return toUserProfile(user);
   }
 
   @Public()
