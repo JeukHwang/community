@@ -33,7 +33,7 @@ export function toSpaceRoleProfile(role: SpaceRole): SpaceRoleProfile {
 export class SpaceService {
   constructor(private prismaService: PrismaService) {}
 
-  async validateSpaceInfo(spaceInfo: CreateRequestDto): Promise<void> {
+  private async validateSpaceInfo(spaceInfo: CreateRequestDto): Promise<void> {
     const isNameUnique =
       (await this.prismaService.space.count({
         where: { name: spaceInfo.name },
