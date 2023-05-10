@@ -175,6 +175,65 @@ export class SpaceService {
     return role.map(toSpaceRoleProfile);
   }
 
+  async removeSpaceRole(spaceName: string, spaceRole: string, user: User) {
+    const space = await this.findByName(spaceName);
+    if (!space) {
+      throw new UnauthorizedException('Invalid space name');
+    }
+    const role = await this.prismaService.spaceRole.findFirst({
+      where: { deletedAt: null, spaceId: space.id, name: spaceRole },
+    });
+    if (!role) {
+      throw new UnauthorizedException('Invalid role name');
+    }
+    const userSpace = await this.prismaService.userSpace.findFirst({
+      where: {
+        deletedAt: null,
+        spaceId: space.id,
+        userId: user.id,
+      },
+      include: {
+        role: {
+          select: {
+            isManager: true,
+          },
+        },
+      },
+    });
+
+    const amIManager = userSpace.role.isManager;
+    if (!amIManager) {
+      throw new UnauthorizedException('Only manager can remove role');
+    }
+
+    const noMemberForRole =
+      (await this.prismaService.userSpace.count({
+        where: { deletedAt: null, roleId: role.id },
+      })) == 0;
+    if (!noMemberForRole) {
+      throw new UnauthorizedException('There are members for this role');
+    }
+    const remainRoleForSpace =
+      (await this.prismaService.spaceRole.count({
+        where: {
+          deletedAt: null,
+          spaceId: space.id,
+          isManager: role.isManager,
+        },
+      })) > 1;
+    if (!remainRoleForSpace) {
+      throw new UnauthorizedException(
+        `There are no other ${
+          role.isManager ? 'manager' : 'participants'
+        } roles for this space`,
+      );
+    }
+    await this.prismaService.spaceRole.updateMany({
+      where: { deletedAt: null, id: role.id },
+      data: { deletedAt: new Date() },
+    });
+  }
+
   async participate(
     spaceName: string,
     spaceRole: string,

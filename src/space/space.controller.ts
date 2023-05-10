@@ -5,6 +5,7 @@ import { CreateRequestDto } from './dto/create.dto';
 import { DestroyRequestDto } from './dto/destroy.dto';
 import { GetAllRoleRequestDto } from './dto/getAllRole.dto';
 import { ParticipateRequestDto } from './dto/participate.dto';
+import { RemoveRoleRequestDto } from './dto/removeRole.dto';
 import { SpaceProfile, SpaceRoleProfile, SpaceService } from './space.service';
 
 @Controller('space')
@@ -27,6 +28,18 @@ export class SpaceController {
   @Post('role')
   getAllRole(@Body() body: GetAllRoleRequestDto): Promise<SpaceRoleProfile[]> {
     return this.spaceService.findSpaceRole(body.spaceName, body.password);
+  }
+
+  @Post('role/remove')
+  removeRole(
+    @Body() body: RemoveRoleRequestDto,
+    @CurrentUser() user,
+  ): Promise<void> {
+    return this.spaceService.removeSpaceRole(
+      body.spaceName,
+      body.spaceRole,
+      user,
+    );
   }
 
   @Post('participate')
