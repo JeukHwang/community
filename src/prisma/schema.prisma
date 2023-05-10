@@ -18,6 +18,7 @@ model Space {
   creatorId String
   creator   User        @relation(fields: [creatorId], references: [id])
   userSpace UserSpace[]
+  spaceRole SpaceRole[]
   post      Post[]
   chat      Chat[]
 
@@ -67,6 +68,8 @@ model SpaceRole {
   name      String
   isManager Boolean
 
+  spaceId   String
+  space     Space       @relation(fields: [spaceId], references: [id])
   userSpace UserSpace[]
 
   deletedAt DateTime?
