@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" && npx prisma format --schema ./src/prisma/schema.prisma",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" && npx prisma format",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -81,5 +81,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "prisma": {
+    "schema": "./src/prisma/schema.prisma"
   }
 }
