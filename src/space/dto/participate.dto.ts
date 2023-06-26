@@ -1,5 +1,5 @@
 export type ParticipateRequestDto = {
-  spaceName: string;
+  spaceId: string;
   spaceRole: string;
   password: string;
 };

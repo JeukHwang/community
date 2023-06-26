@@ -27,7 +27,7 @@ export class SpaceController {
 
   @Post('role')
   getAllRole(@Body() body: GetAllRoleRequestDto): Promise<SpaceRoleProfile[]> {
-    return this.spaceService.findSpaceRole(body.spaceName, body.password);
+    return this.spaceService.findSpaceRole(body.spaceId, body.password);
   }
 
   @Post('role/remove')
@@ -36,7 +36,7 @@ export class SpaceController {
     @CurrentUser() user,
   ): Promise<void> {
     return this.spaceService.removeSpaceRole(
-      body.spaceName,
+      body.spaceId,
       body.spaceRole,
       user,
     );
@@ -47,8 +47,8 @@ export class SpaceController {
     @Body() body: ParticipateRequestDto,
     @CurrentUser() user: User,
   ): Promise<UserSpace> {
-    const { spaceName, spaceRole, password } = body;
-    return this.spaceService.participate(spaceName, spaceRole, password, user);
+    const { spaceId, spaceRole, password } = body;
+    return this.spaceService.participate(spaceId, spaceRole, password, user);
   }
 
   @Post('destroy')
@@ -56,6 +56,6 @@ export class SpaceController {
     @Body() body: DestroyRequestDto,
     @CurrentUser() user: User,
   ): Promise<void> {
-    return this.spaceService.destroy(body.spaceName, user);
+    return this.spaceService.destroy(body.spaceId, user);
   }
 }

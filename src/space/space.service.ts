@@ -151,12 +151,12 @@ export class SpaceService {
   }
 
   async findSpaceRole(
-    spaceName: string,
+    spaceId: string,
     password: string,
   ): Promise<SpaceRoleProfile[]> {
-    const space = await this.findByName(spaceName);
+    const space = await this.findById(spaceId);
     if (!space) {
-      throw new UnauthorizedException('Invalid space name');
+      throw new UnauthorizedException('Invalid space id');
     }
     const isManagerPassword = await bcrypt.compare(
       password,
@@ -179,10 +179,10 @@ export class SpaceService {
     return role.map(toSpaceRoleProfile);
   }
 
-  async removeSpaceRole(spaceName: string, spaceRole: string, user: User) {
-    const space = await this.findByName(spaceName);
+  async removeSpaceRole(spaceId: string, spaceRole: string, user: User) {
+    const space = await this.findById(spaceId);
     if (!space) {
-      throw new UnauthorizedException('Invalid space name');
+      throw new UnauthorizedException('Invalid space id');
     }
     const role = await this.prismaService.spaceRole.findFirst({
       where: { deletedAt: null, spaceId: space.id, name: spaceRole },
@@ -239,14 +239,14 @@ export class SpaceService {
   }
 
   async participate(
-    spaceName: string,
+    spaceId: string,
     spaceRole: string,
     password: string,
     user: User,
   ): Promise<UserSpace> {
-    const space = await this.findByName(spaceName);
+    const space = await this.findById(spaceId);
     if (!space) {
-      throw new UnauthorizedException('Invalid space name');
+      throw new UnauthorizedException('Invalid space id');
     }
     const isMember = await this.isUserMember(space.id, user.id);
     if (isMember) {
@@ -274,8 +274,8 @@ export class SpaceService {
     return userSpace;
   }
 
-  async destroy(spaceName: string, user: User): Promise<void> {
-    const space = await this.findByName(spaceName);
+  async destroy(spaceId: string, user: User): Promise<void> {
+    const space = await this.findById(spaceId);
     if (!space) {
       throw new UnauthorizedException('Invalid space id');
     }

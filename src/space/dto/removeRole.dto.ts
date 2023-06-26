@@ -1,4 +1,4 @@
 export type RemoveRoleRequestDto = {
-  spaceName: string;
+  spaceId: string;
   spaceRole: string;
 };

@@ -1,4 +1,4 @@
 export type GetAllRoleRequestDto = {
-  spaceName: string;
+  spaceId: string;
   password: string;
 };
