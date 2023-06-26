@@ -1,10 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RegisterRequestDto } from 'src/auth/dto/register.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 export type UserProfile = {
+  id: string;
   email: string;
   surname: string;
   givenName: string;
@@ -13,6 +14,7 @@ export type UserProfile = {
 
 export function toUserProfile(user: User): UserProfile {
   return {
+    id: user.id,
     email: user.email,
     surname: user.surname,
     givenName: user.givenName,
@@ -24,21 +26,26 @@ export function toUserProfile(user: User): UserProfile {
 export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
   async create(userInfo: RegisterRequestDto): Promise<User | null> {
-    const isEmailUnique =
-      (await this.prismaService.user.count({
-        where: { deletedAt: null, email: userInfo.email },
-      })) == 0;
-    if (!isEmailUnique) {
-      throw new UnauthorizedException('Duplicated email');
+    try {
+      const defaultProfilePhoto = 'https://sparcs.org/img/symbol.svg';
+      const user = await this.prismaService.user.create({
+        data: {
+          ...userInfo,
+          profilePhoto: defaultProfilePhoto,
+        },
+      });
+      return user;
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        // The .code property can be accessed in a type-safe manner
+        if (e.code === 'P2002') {
+          console.log(
+            'There is a unique constraint violation, a new user cannot be created with this email',
+          );
+        }
+      }
+      throw e;
     }
-    const defaultProfilePhoto = 'https://sparcs.org/img/symbol.svg';
-    const user = await this.prismaService.user.create({
-      data: {
-        ...userInfo,
-        profilePhoto: defaultProfilePhoto,
-      },
-    });
-    return user;
   }
 
   async findAllProfile(): Promise<UserProfile[]> {
@@ -70,7 +77,7 @@ export class UserService {
 
   async setRefreshToken(id: string, refreshToken: string) {
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    console.log(hashedRefreshToken);
+    // console.log(hashedRefreshToken);
     await this.prismaService.user.updateMany({
       where: { deletedAt: null, id },
       data: { refreshToken: hashedRefreshToken },
@@ -82,6 +89,7 @@ export class UserService {
     refreshToken: string,
   ): Promise<User | null> {
     const user = await this.findById(id);
+    if (!user) return null;
     const isRefreshTokenMatching = await bcrypt.compare(
       refreshToken,
       user.refreshToken,
