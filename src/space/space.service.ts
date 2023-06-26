@@ -38,13 +38,6 @@ export class SpaceService {
   constructor(private prismaService: PrismaService) {}
 
   private async validateSpaceInfo(spaceInfo: CreateRequestDto): Promise<void> {
-    const isNameUnique =
-      (await this.prismaService.space.count({
-        where: { name: spaceInfo.name },
-      })) == 0;
-    if (!isNameUnique) {
-      throw new UnauthorizedException('Duplicated name');
-    }
     const isPasswordSame =
       spaceInfo.managerPassword === spaceInfo.participantPassword;
     if (isPasswordSame) {
