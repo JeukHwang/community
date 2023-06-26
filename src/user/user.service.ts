@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { RegisterRequestDto } from 'src/auth/dto/register.dto';
@@ -42,6 +42,7 @@ export class UserService {
           console.log(
             'There is a unique constraint violation, a new user cannot be created with this email',
           );
+          throw new UnauthorizedException('Unique constraint violated');
         }
       }
       throw e;

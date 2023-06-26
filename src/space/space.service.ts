@@ -84,7 +84,8 @@ export class SpaceService {
     try {
       await this.validateSpaceInfo(spaceInfo);
     } catch (error) {
-      throw error;
+      console.log('Create space', error);
+      throw new UnauthorizedException('Space creation failed');
     }
 
     const defaultProfilePhoto = 'https://sparcs.org/img/symbol.svg';
