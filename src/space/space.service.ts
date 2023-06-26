@@ -5,17 +5,20 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateRequestDto } from './dto/create.dto';
 
 export type SpaceProfile = {
+  id: string;
   name: string;
   profilePhoto: string;
   // memberCount: number
 };
 export type SpaceRoleProfile = {
+  id: string;
   name: string;
   isManager: boolean;
 };
 
 export function toSpaceProfile(space: Space): SpaceProfile {
   return {
+    id: space.id,
     name: space.name,
     profilePhoto: space.profilePhoto,
     // memberCount: 0,
@@ -24,6 +27,7 @@ export function toSpaceProfile(space: Space): SpaceProfile {
 
 export function toSpaceRoleProfile(role: SpaceRole): SpaceRoleProfile {
   return {
+    id: role.id,
     name: role.name,
     isManager: role.isManager,
   };
@@ -244,11 +248,8 @@ export class SpaceService {
     if (!space) {
       throw new UnauthorizedException('Invalid space name');
     }
-    const isAlreadyMember =
-      (await this.prismaService.userSpace.count({
-        where: { deletedAt: null, spaceId: space.id, userId: user.id },
-      })) > 0;
-    if (isAlreadyMember) {
+    const isMember = await this.isUserMember(space.id, user.id);
+    if (isMember) {
       throw new UnauthorizedException('Already member');
     }
     const role = await this.prismaService.spaceRole.findFirst({
@@ -285,5 +286,31 @@ export class SpaceService {
       where: { deletedAt: null, id: space.id },
       data: { deletedAt: new Date() },
     });
+  }
+
+  async isUserMember(spaceId: string, userId: string): Promise<boolean> {
+    try {
+      const userSpace = await this.prismaService.userSpace
+        .findFirstOrThrow({ where: { deletedAt: null, spaceId, userId } })
+        .role();
+      return userSpace !== null;
+    } catch (e) {
+      if (e instanceof UnauthorizedException) {
+        return false;
+      }
+    }
+  }
+
+  async isUserManager(spaceId: string, userId: string): Promise<boolean> {
+    try {
+      const userSpace = await this.prismaService.userSpace
+        .findFirstOrThrow({ where: { deletedAt: null, spaceId, userId } })
+        .role();
+      return userSpace.isManager ? true : false;
+    } catch (e) {
+      if (e instanceof UnauthorizedException) {
+        return false;
+      }
+    }
   }
 }
