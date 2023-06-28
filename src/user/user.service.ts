@@ -71,8 +71,10 @@ export class UserService {
   }
 
   async removeById(id: string) {
-    await this.prismaService.user.deleteMany({
+    // TODO: change into soft delete middleware
+    await this.prismaService.user.updateMany({
       where: { deletedAt: null, id },
+      data: { deletedAt: new Date() },
     });
   }
 
