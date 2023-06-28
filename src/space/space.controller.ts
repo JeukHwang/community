@@ -13,8 +13,8 @@ export class SpaceController {
   constructor(private readonly spaceService: SpaceService) {}
 
   @Get('all')
-  getAll(): Promise<SpaceProfile[]> {
-    return this.spaceService.findAllSpaceProfile();
+  getAll(@CurrentUser() user: User): Promise<SpaceProfile[]> {
+    return this.spaceService.findAllSpaceProfile(user);
   }
 
   @Post('create')
@@ -47,8 +47,8 @@ export class SpaceController {
     @Body() body: ParticipateRequestDto,
     @CurrentUser() user: User,
   ): Promise<UserSpace> {
-    const { spaceId, spaceRole, password } = body;
-    return this.spaceService.participate(spaceId, spaceRole, password, user);
+    const { spaceRole, password } = body;
+    return this.spaceService.participate(spaceRole, password, user);
   }
 
   @Post('destroy')

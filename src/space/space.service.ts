@@ -1,6 +1,11 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  UnauthorizedException,
+  forwardRef,
+} from '@nestjs/common';
 import { Space, SpaceRole, User, UserSpace } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import { PostService } from 'src/post/post.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateRequestDto } from './dto/create.dto';
 
@@ -8,6 +13,9 @@ export type SpaceProfile = {
   id: string;
   name: string;
   profilePhoto: string;
+
+  managerPassword: string;
+  participantPassword: string;
   // memberCount: number
 };
 export type SpaceRoleProfile = {
@@ -16,11 +24,14 @@ export type SpaceRoleProfile = {
   isManager: boolean;
 };
 
-export function toSpaceProfile(space: Space): SpaceProfile {
+export function toSpaceProfile(space: Space, isManager: boolean): SpaceProfile {
   return {
     id: space.id,
     name: space.name,
     profilePhoto: space.profilePhoto,
+
+    managerPassword: isManager ? space.managerPassword : undefined,
+    participantPassword: isManager ? space.participantPassword : undefined,
     // memberCount: 0,
   };
 }
@@ -35,15 +46,28 @@ export function toSpaceRoleProfile(role: SpaceRole): SpaceRoleProfile {
 
 @Injectable()
 export class SpaceService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    @Inject(forwardRef(() => PostService))
+    private postService: PostService,
+  ) {}
+
+  private async getPassword(): Promise<string> {
+    const code = Array.from(Array(8), () =>
+      Math.floor(Math.random() * 36).toString(36),
+    ).join('');
+    const space = await this.prismaService.space.findMany({
+      where: {
+        OR: [
+          { managerPassword: code, deletedAt: null },
+          { participantPassword: code, deletedAt: null },
+        ],
+      },
+    });
+    return space.length === 0 ? code : this.getPassword();
+  }
 
   private async validateSpaceInfo(spaceInfo: CreateRequestDto): Promise<void> {
-    const isPasswordSame =
-      spaceInfo.managerPassword === spaceInfo.participantPassword;
-    if (isPasswordSame) {
-      throw new UnauthorizedException('Use two different passwords');
-    }
-
     for (let i = 0; i < spaceInfo.role.length - 1; i++) {
       for (let j = 1; j < spaceInfo.role.length; j++) {
         if (i !== j && spaceInfo.role[i].name === spaceInfo.role[j].name) {
@@ -80,13 +104,9 @@ export class SpaceService {
       console.log('Create space', error);
       throw new UnauthorizedException('Space creation failed');
     }
-
     const defaultProfilePhoto = 'https://sparcs.org/img/symbol.svg';
-    const managerPassword = await bcrypt.hash(spaceInfo.managerPassword, 10);
-    const participantPassword = await bcrypt.hash(
-      spaceInfo.participantPassword,
-      10,
-    );
+    const managerPassword = await this.getPassword();
+    const participantPassword = await this.getPassword();
     const space = await this.prismaService.space.create({
       data: {
         managerPassword: managerPassword,
@@ -120,7 +140,7 @@ export class SpaceService {
         roleId: defaultRole.id,
       },
     });
-    return toSpaceProfile(space);
+    return toSpaceProfile(space, true);
   }
 
   async findById(id: string): Promise<Space | null> {
@@ -137,11 +157,16 @@ export class SpaceService {
     return space;
   }
 
-  async findAllSpaceProfile(): Promise<SpaceProfile[]> {
-    const space = await this.prismaService.space.findMany({
+  async findAllSpaceProfile(user: User): Promise<SpaceProfile[]> {
+    const spaces = await this.prismaService.space.findMany({
       where: { deletedAt: null },
     });
-    return space.map(toSpaceProfile);
+    return await Promise.all(
+      spaces.map(async (space) => {
+        const isUserManager = await this.isUserManager(space.id, user.id);
+        return toSpaceProfile(space, isUserManager);
+      }),
+    );
   }
 
   async findSpaceRole(
@@ -152,14 +177,8 @@ export class SpaceService {
     if (!space) {
       throw new UnauthorizedException('Invalid space id');
     }
-    const isManagerPassword = await bcrypt.compare(
-      password,
-      space.managerPassword,
-    );
-    const isParticipantPassword = await bcrypt.compare(
-      password,
-      space.participantPassword,
-    );
+    const isManagerPassword = password === space.managerPassword;
+    const isParticipantPassword = password === space.participantPassword;
     if (!(isManagerPassword || isParticipantPassword)) {
       throw new UnauthorizedException('Invalid password');
     }
@@ -184,23 +203,16 @@ export class SpaceService {
     if (!role) {
       throw new UnauthorizedException('Invalid role name');
     }
-    const userSpace = await this.prismaService.userSpace.findFirst({
-      where: {
-        deletedAt: null,
-        spaceId: space.id,
-        userId: user.id,
-      },
-      include: {
-        role: {
-          select: {
-            isManager: true,
-          },
+    const userRole = await this.prismaService.userSpace
+      .findFirst({
+        where: {
+          deletedAt: null,
+          spaceId: space.id,
+          userId: user.id,
         },
-      },
-    });
-
-    const amIManager = userSpace.role.isManager;
-    if (!amIManager) {
+      })
+      .role();
+    if (!userRole.isManager) {
       throw new UnauthorizedException('Only manager can remove role');
     }
 
@@ -233,12 +245,18 @@ export class SpaceService {
   }
 
   async participate(
-    spaceId: string,
     spaceRole: string,
     password: string,
     user: User,
   ): Promise<UserSpace> {
-    const space = await this.findById(spaceId);
+    const space = await this.prismaService.space.findFirst({
+      where: {
+        OR: [
+          { managerPassword: password, deletedAt: null },
+          { participantPassword: password, deletedAt: null },
+        ],
+      },
+    });
     if (!space) {
       throw new UnauthorizedException('Invalid space id');
     }
@@ -253,8 +271,8 @@ export class SpaceService {
       throw new UnauthorizedException('Invalid role name');
     }
     const isValidRoleWithPassword = role.isManager
-      ? await bcrypt.compare(password, space.managerPassword)
-      : await bcrypt.compare(password, space.participantPassword);
+      ? password === space.managerPassword
+      : password === space.participantPassword;
     if (!isValidRoleWithPassword) {
       throw new UnauthorizedException('Invalid password');
     }
@@ -269,15 +287,23 @@ export class SpaceService {
   }
 
   async destroy(spaceId: string, user: User): Promise<void> {
-    const space = await this.findById(spaceId);
+    // const space = await this.findById(spaceId);
+    const space = await this.prismaService.space.findFirst({
+      where: { id: spaceId, deletedAt: null },
+      select: { creatorId: true, post: true },
+    });
     if (!space) {
       throw new UnauthorizedException('Invalid space id');
     }
     if (space.creatorId !== user.id) {
       throw new UnauthorizedException('Only creator can destroy space');
     }
+    // remove all posts
+    await Promise.all(
+      space.post.map((post) => this.postService.delete(post.id, user)),
+    );
     await this.prismaService.space.updateMany({
-      where: { deletedAt: null, id: space.id },
+      where: { id: spaceId, deletedAt: null },
       data: { deletedAt: new Date() },
     });
   }
