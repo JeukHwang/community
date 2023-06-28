@@ -42,7 +42,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       if (params.action == 'deleteMany') {
         params.action = 'updateMany';
         if (params.args.data != undefined) {
-          params.args.data['deleted'] = true;
+          params.args.data['deleted'] = true; // TODO - check if this works; why deleted instead of deletedAt?
         } else {
           params.args['data'] = { deletedAt: new Date() };
         }

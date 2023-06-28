@@ -1,114 +1,116 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("MYSQL_URL_DEV")
+  provider = "mysql"
+  url      = env("MYSQL_URL_DEV")
 }
 
 model Space {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    managerPassword     String
-    participantPassword String
-    name                String
-    profilePhoto        String
+  managerPassword     String
+  participantPassword String
+  name                String
+  profilePhoto        String
 
-    creatorId String
-    creator   User        @relation(fields: [creatorId], references: [id])
-    userSpace UserSpace[]
-    spaceRole SpaceRole[]
-    post      Post[]
-    chat      Chat[]
+  creatorId String
+  creator   User        @relation(fields: [creatorId], references: [id])
+  userSpace UserSpace[]
+  spaceRole SpaceRole[]
+  post      Post[]
 
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model User {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    email        String  @unique()
-    password     String
-    surname      String
-    givenName    String
-    profilePhoto String
-    refreshToken String?
+  email        String  @unique()
+  password     String
+  surname      String
+  givenName    String
+  profilePhoto String
+  refreshToken String?
 
-    userSpace UserSpace[]
-    creator   Space[]
-    post      Post[]
-    chat      Chat[]
+  userSpace UserSpace[]
+  creator   Space[]
+  post      Post[]
+  chat      Chat[]
 
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
 
 model UserSpace {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    userId  String
-    user    User      @relation(fields: [userId], references: [id])
-    spaceId String
-    space   Space     @relation(fields: [spaceId], references: [id])
-    roleId  String
-    role    SpaceRole @relation(fields: [roleId], references: [id])
+  userId  String
+  user    User      @relation(fields: [userId], references: [id])
+  spaceId String
+  space   Space     @relation(fields: [spaceId], references: [id])
+  roleId  String
+  role    SpaceRole @relation(fields: [roleId], references: [id])
 
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
 
 model SpaceRole {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    name      String
-    isManager Boolean
+  name      String
+  isManager Boolean
 
-    spaceId   String
-    space     Space       @relation(fields: [spaceId], references: [id])
-    userSpace UserSpace[]
+  spaceId   String
+  space     Space       @relation(fields: [spaceId], references: [id])
+  userSpace UserSpace[]
 
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
 
 model Post {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    title       String
-    content     String
-    type        String
-    isAnonymous Boolean
+  title       String
+  content     String
+  type        String
+  isAnonymous Boolean
 
-    authorId String
-    author   User   @relation(fields: [authorId], references: [id])
-    spaceId  String
-    space    Space  @relation(fields: [spaceId], references: [id])
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+  spaceId  String
+  space    Space  @relation(fields: [spaceId], references: [id])
+  file     String
+  chat     Chat[]
 
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
 
 model Chat {
-    id String @id @default(uuid())
+  id String @id @default(uuid())
 
-    content String
+  content     String
+  isAnonymous Boolean
 
-    authorId     String
-    author       User    @relation(fields: [authorId], references: [id])
-    spaceId      String
-    space        Space   @relation(fields: [spaceId], references: [id])
-    parentChatId String?
-    parentChat   Chat?   @relation("ParentChatChildChat", fields: [parentChatId], references: [id])
-    childChat    Chat[]  @relation("ParentChatChildChat")
+  authorId     String
+  author       User    @relation(fields: [authorId], references: [id])
+  postId       String
+  post         Post    @relation(fields: [postId], references: [id])
+  parentChatId String?
+  parentChat   Chat?   @relation("ParentChatChildChat", fields: [parentChatId], references: [id])
+  childChat    Chat[]  @relation("ParentChatChildChat")
 
-    deletedAt DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @default(now())
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
 }
