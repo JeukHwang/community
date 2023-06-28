@@ -32,3 +32,17 @@ defaultRole rename to defaultCreatorRole
 typing validation; https://www.prisma.io/docs/concepts/components/prisma-client/custom-validation
 
 swagger
+
+forwardRef 삭제하기!
+
+name은 unique하지 않게 만들기
+
+prisma - middleware 추가하기
+
+class validator
+
+create, add
+delete, remove, destroy(완전 삭제) - 
+
+
+db가 아닌 profile에서 deletedAt 처리
