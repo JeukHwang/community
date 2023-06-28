@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\" && npx prisma format",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -21,8 +21,27 @@
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
+    "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
+    "@nestjs/jwt": "^10.0.3",
+    "@nestjs/passport": "^9.0.3",
     "@nestjs/platform-express": "^9.0.0",
+    "@prisma/client": "^4.14.1",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/multer": "^1.4.7",
+    "@types/passport-local": "^1.0.35",
+    "aws-sdk": "^2.1405.0",
+    "bcrypt": "^5.1.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.3",
+    "joi": "^17.9.2",
+    "mysql2": "^3.2.4",
+    "passport": "^0.6.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "prisma": "^4.16.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
   },
@@ -65,5 +84,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "prisma": {
+    "schema": "./src/prisma/schema.prisma"
   }
 }
