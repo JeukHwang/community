@@ -1,6 +1,6 @@
 import { IsString } from 'class-validator';
 
-export class DestroyRequestDto {
+export class DownloadPostRequestDto {
   @IsString()
-  spaceId: string;
+  key: string;
 }

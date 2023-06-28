@@ -1,10 +1,17 @@
-export type CreateRequestDto = {
+import { IsBoolean, IsString, ValidateNested } from 'class-validator';
+
+class Role {
+  @IsString()
   name: string;
-  managerPassword: string;
-  participantPassword: string;
-  role: {
-    name: string;
-    isManager: boolean;
-  }[];
+  @IsBoolean()
+  isManager: boolean;
+}
+
+export class CreateRequestDto {
+  @IsString()
+  name: string;
+  @ValidateNested()
+  role: Role[];
+  @IsString()
   defaultRole: string;
-};
+}

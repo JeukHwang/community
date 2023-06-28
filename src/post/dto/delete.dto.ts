@@ -1,3 +1,6 @@
-export type DeletePostRequestDto = {
+import { IsString } from 'class-validator';
+
+export class DeletePostRequestDto {
+  @IsString()
   postId: string;
-};
+}
